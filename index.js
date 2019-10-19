@@ -37,7 +37,7 @@ function makeRequest(eventName, last) {
             else {
                 // was successful, send text to OBS and get next
                 var text = bodyJson.i[0].d;
-                text += decodeURIComponent(text);
+                text = decodeURIComponent(text);
                 console.log( `${last}: ${text}` )
                 appendCaptionFragment(text);
                 makeRequest(eventName, next);
