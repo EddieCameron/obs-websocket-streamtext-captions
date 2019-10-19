@@ -57,7 +57,7 @@ var streamTextEventName = process.argv[3];
 // set up obs
 const obs = new OBSWebSocket();
 console.log("Connecting to OBS server...");
-obs.connect({ address: 'localhost:4444', password: pwd })
+obs.connect({ address: 'localhost:4446', password: pwd })
     .then(() => {
         console.log("Connected to OBS")
         console.log("Connecting to StreamText...")
