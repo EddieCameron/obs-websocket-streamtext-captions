@@ -30,6 +30,7 @@ function makeRequest(eventName, last) {
             var next = bodyJson.lastPosition;
             if (next == 0) {
                 // no data wait and try again
+                console.log("No new text received. Trying again after timeout...");
                 setTimeout(() => {
                     makeRequest(eventName, last);
                 }, 1000);
@@ -76,6 +77,7 @@ function sendCaption(captionText) {
 }
 
 function checkCaptionTimeout() {
+    console.log("Timeout at " + ( Date.now - lastCaptionSendTime) );
     if (Date.now - lastCaptionSendTime > MAX_SECONDS_PER_CAPTION * 1000) {
         console.log("Too long between caption updates, sending current buffer")
         sendCaption(accumText)
