@@ -17,7 +17,7 @@ function makeRequest(eventName, last) {
     };
 
     request(options, (error, res, body) => {
-        if (error != nil) {
+        if (error != null) {
             console.error(error);
         }
         else {
@@ -35,14 +35,20 @@ function makeRequest(eventName, last) {
                 text = decodeURIComponent(text);
                 console.log( `${last}: ${text}` )
                 sendCaption(text);
-                makeRequest(eventName, lastPosition);
+                makeRequest(eventName, next);
             }
         }
     });
 }
 
 function sendCaption(captionText) {
-    obs.send('SendCaptions', { text: captionText });
+    obs.send('SendCaptions', { text: captionText })
+        .then(data => {
+            console.log("Captions sent: " + data);
+        })
+        .catch(error => {
+            console.error(error);
+        });
 }
 
 var pwd = process.argv[2];
