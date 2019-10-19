@@ -2,6 +2,9 @@ const request = require('request');
 const OBSWebSocket = require('obs-websocket-js');
 
 var accumText = "";
+var lastCaptionSendTime
+const MIN_CHAR_PER_CAPTION = 80
+const MAX_SECONDS_PER_CAPTION = 4
 
 function makeRequest(eventName, last) {
     var url = `https://www.streamtext.net/text-data.ashx?event=${eventName}&last=${last}`;
@@ -34,23 +37,47 @@ function makeRequest(eventName, last) {
             else {
                 // was successful, send text to OBS and get next
                 var text = bodyJson.i[0].d;
-                accumText += decodeURIComponent(text);
+                text += decodeURIComponent(text);
                 console.log( `${last}: ${text}` )
-                sendCaption(accumText);
+                appendCaptionFragment(text);
                 makeRequest(eventName, next);
             }
         }
     });
 }
 
+function appendCaptionFragment(captionText) {
+    for (let i = 0; i < captionText.length; i++) {
+        const c = captionText[i];
+        accumText += c;
+        if (c == ' ') {
+            // end of a word, try sending
+            if (accumText.length >= MIN_CHAR_PER_CAPTION) {
+                sendCaption(accumText);
+                accumText = "";
+            }
+        }
+            
+    }
+}
+
 function sendCaption(captionText) {
+    lastCaptionSendTime = Date.now();
     obs.send('SendCaptions', { text: captionText })
         .then(data => {
-            console.log("Captions sent: " + data);
+            console.log("Captions sent: " + JSON.stringify(data));
         })
         .catch(error => {
             console.error(error);
         });
+}
+
+function checkCaptionTimeout() {
+    if (Date.now - lastCaptionSendTime > MAX_SECONDS_PER_CAPTION * 1000) {
+        console.log("Too long between caption updates, sending current buffer")
+        sendCaption(accumText)
+        accumText = "";
+    }
 }
 
 var pwd = process.argv[2];
@@ -65,6 +92,9 @@ obs.connect({ address: 'localhost:4446', password: pwd })
         console.log("Connecting to StreamText...")
         
         makeRequest(streamTextEventName, 0);
+
+        lastCaptionSendTime = Date.now();
+        setInterval( checkCaptionTimeout, 1000);
     })
     .catch(err => {
         console.error(err);
