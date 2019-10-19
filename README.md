@@ -2,9 +2,10 @@
 NodeJS tool to feed live [StreamText](https://streamtext.net/) caption data into [Open Broadcaster Software (OBS)](https://obsproject.com/), so it can format captions into EIA-608 spec for [Twitch closed captioning](https://help.twitch.tv/s/article/guide-to-closed-captions?language=en_US). If you don't use this, you basically have to roll your own media encoder tech stack (Wowza, etc) or buy an expensive hardware caption encoder.
 
 ## install
-1. run `npm install` in command line or terminal or bash, etc.
-2. in OBS, go to **Tools > Options > Captions (Experimental)** and enable captions on a muted sound source (don't worry, those bad captions will get overridden by this tool)
-3. download and install [obs-websocket](https://github.com/Palakis/obs-websocket) plugin, and activate it via **Tools > Options > WebSockets Server Settings**
+1. download and install [NodeJS](https://nodejs.org/en/download/) on your OBS computer
+2. download or clone this repo, open it in command line / terminal / bash, and run `npm install`
+3. in OBS, go to **Tools > Options > Captions (Experimental)** and enable captions on a muted sound source (don't worry, those bad captions will get overridden by this tool)
+4. download and install [obs-websocket](https://github.com/Palakis/obs-websocket) plugin, and activate it via **Tools > Options > WebSockets Server Settings**
 
 ## usage
 - during your broadcast, run `node index [address:port] [password] [streamtext_event]` in your terminal
