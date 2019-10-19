@@ -1,12 +1,12 @@
 {
-  "name": "streamtextstream",
+  "name": "obs-websocket-streamtext",
   "version": "1.0.0",
-  "description": "",
+  "description": "Simple tool to feed StreamText data into OBS (via obs-websockets) so you can do live closed captioning in Twitch.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Eddie Cameron",
   "license": "ISC",
   "dependencies": {
     "obs-websocket-js": "^3.1.0",

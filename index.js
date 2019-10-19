@@ -1,10 +1,23 @@
+
+// obs-websocket-streamtext
+// Simple tool to feed StreamText data into OBS (via obs-websockets) so you can do live closed captioning in Twitch
+
+// install:
+// 1. run "npm install" in command line or terminal or bash
+// 2. in OBS, go to Tools > Options > Captions (Experimental) and enable captions on a muted sound source
+// 3. download and install obs-websockets plugin for OBS, and activate it (Tools > Options > WebSockets Server Settings)
+
+// usage:
+// run "node index [address:port] [password] [streamtext_event]" (e.g. "node index localhost:4444 myPassword IHaveADream")
+// (or edit the provided .bat file in a text editor to do it for you)
+
 const request = require('request');
 const OBSWebSocket = require('obs-websocket-js');
 
 var accumText = "";
 var lastCaptionSendTime
 const MIN_CHAR_PER_CAPTION = 80
-const MAX_SECONDS_PER_CAPTION = 4
+const MAX_SECONDS_PER_CAPTION = 6
 
 function makeRequest(eventName, last) {
     var url = `https://www.streamtext.net/text-data.ashx?event=${eventName}&last=${last}`;
@@ -39,7 +52,7 @@ function makeRequest(eventName, last) {
                 // was successful, send text to OBS and get next
                 var text = bodyJson.i[0].d;
                 text = decodeURIComponent(text);
-                console.log( `${last}: ${text}` )
+                // console.log( `${last}: ${text}` )
                 appendCaptionFragment(text);
                 setTimeout(() => {
                     makeRequest(eventName, next);                    
@@ -66,10 +79,10 @@ function appendCaptionFragment(captionText) {
 
 function sendCaption(captionText) {
     lastCaptionSendTime = Date.now();
-    console.log("Sneding: " + captionText);
+    console.log(">>> " + captionText);
     obs.send('SendCaptions', { text: captionText })
         .then(data => {
-            console.log("Captions sent: " + JSON.stringify(data));
+            // console.log("Captions sent: " + JSON.stringify(data));
         })
         .catch(error => {
             console.error(error);
@@ -77,24 +90,26 @@ function sendCaption(captionText) {
 }
 
 function checkCaptionTimeout() {
-    console.log("Timeout at " + ( Date.now() - lastCaptionSendTime) );
+    // console.log("Timeout at " + ( Date.now() - lastCaptionSendTime) );
+    console.log("..." );
     if (Date.now() - lastCaptionSendTime > MAX_SECONDS_PER_CAPTION * 1000) {
-        console.log("Too long between caption updates, sending current buffer")
+        console.log("Too long between caption updates, sending current buffer!...")
         sendCaption(accumText)
         accumText = "";
     }
 }
 
-var pwd = process.argv[2];
-var streamTextEventName = process.argv[3];
+var adr = process.argv[2];
+var pwd = process.argv[3];
+var streamTextEventName = process.argv[4];
 
 // set up obs
 const obs = new OBSWebSocket();
-console.log("Connecting to OBS server...");
-obs.connect({ address: 'localhost:4446', password: pwd })
+console.log("Connecting to OBS server... ");
+obs.connect({ address: adr, password: pwd })
     .then(() => {
-        console.log("Connected to OBS")
-        console.log("Connecting to StreamText...")
+        console.log("Connected to OBS WebSockets server at " + adr);
+        console.log("Connecting to StreamText event " + streamTextEventName);
         
         makeRequest(streamTextEventName, 0);
 
