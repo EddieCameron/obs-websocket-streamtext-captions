@@ -1,6 +1,8 @@
 const request = require('request');
 const OBSWebSocket = require('obs-websocket-js');
 
+var accumText = "";
+
 function makeRequest(eventName, last) {
     var url = `https://www.streamtext.net/text-data.ashx?event=${eventName}&last=${last}`;
 
@@ -32,9 +34,9 @@ function makeRequest(eventName, last) {
             else {
                 // was successful, send text to OBS and get next
                 var text = bodyJson.i[0].d;
-                text = decodeURIComponent(text);
+                accumText += decodeURIComponent(text);
                 console.log( `${last}: ${text}` )
-                sendCaption(text);
+                sendCaption(accumText);
                 makeRequest(eventName, next);
             }
         }
