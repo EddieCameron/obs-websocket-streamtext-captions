@@ -17,7 +17,7 @@ function makeRequest(eventName, last) {
     };
 
     request(options, (error, res, body) => {
-        if (error != nil) {
+        if (error != null) {
             console.error(error);
         }
         else {
@@ -35,7 +35,7 @@ function makeRequest(eventName, last) {
                 text = decodeURIComponent(text);
                 console.log( `${last}: ${text}` )
                 sendCaption(text);
-                makeRequest(eventName, lastPosition);
+                makeRequest(eventName, next);
             }
         }
     });
@@ -51,7 +51,7 @@ var streamTextEventName = process.argv[3];
 // set up obs
 const obs = new OBSWebSocket();
 console.log("Connecting to OBS server...");
-obs.connect({ address: 'localhost:4444', password: pwd })
+obs.connect({ address: 'localhost:4446', password: pwd })
     .then(() => {
         console.log("Connected to OBS")
         console.log("Connecting to StreamText...")
