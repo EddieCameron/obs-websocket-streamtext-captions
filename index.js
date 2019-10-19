@@ -40,7 +40,9 @@ function makeRequest(eventName, last) {
                 text = decodeURIComponent(text);
                 console.log( `${last}: ${text}` )
                 appendCaptionFragment(text);
-                makeRequest(eventName, next);
+                setTimeout(() => {
+                    makeRequest(eventName, next);                    
+                }, 500);
             }
         }
     });
@@ -63,6 +65,7 @@ function appendCaptionFragment(captionText) {
 
 function sendCaption(captionText) {
     lastCaptionSendTime = Date.now();
+    console.log("Sneding: " + captionText);
     obs.send('SendCaptions', { text: captionText })
         .then(data => {
             console.log("Captions sent: " + JSON.stringify(data));
