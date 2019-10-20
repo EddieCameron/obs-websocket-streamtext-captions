@@ -14,8 +14,10 @@ NodeJS tool to feed live [StreamText](https://streamtext.net/) caption data into
 
 ## how it works / workflow / pipeline
 1. hire a human stenographer / live captioner / CART provider to type out captions, really really fast, into StreamText
-2. this tool takes the StreamText data, and sends it into an OBS WebSocket Server via its [SendCaptions protocol](https://github.com/Palakis/obs-websocket/blob/4.x-current/docs/generated/protocol.md#sendcaptions)
-3. OBS uses [libcaption](https://github.com/szatmary/libcaption) (already bundled with OBS) to encode the text into EIA-608 format, to embed into the RMTP data stream (see [Twitch's requirements for closed caption data](https://help.twitch.tv/s/article/guide-to-closed-captions?language=en_US) )
+2. this tool takes the StreamText data and sends it into OBS
+    - it collects recent StreamText data into a buffer, then waits until the buffer fills up (default: 80 characters) or StreamText times out (default: 5 seconds) while trying to line break the text between words (instead of line breaking in the middle of a word)
+    - then it sends the caption buffer into the OBS WebSocket Server via [SendCaptions protocol](https://github.com/Palakis/obs-websocket/blob/4.x-current/docs/generated/protocol.md#sendcaptions)
+3. OBS uses [libcaption](https://github.com/szatmary/libcaption) (already bundled with OBS) to encode its caption text into EIA-608 format to embed into the RMTP data stream (see [Twitch's requirements for closed caption data](https://help.twitch.tv/s/article/guide-to-closed-captions?language=en_US) )
 4. Twitch's media servers ingest the video feed / caption data, and then it hopefully enables the closed caption feature for your viewers
 
 If you cannot afford or don't want to hire a human live captioner, there are already tools like [Web Captioner](https://webcaptioner.com/) that can easily hook into OBS. This tool is specifically for Twitch broadcasts that want to provide closed captions via human live captioners.
