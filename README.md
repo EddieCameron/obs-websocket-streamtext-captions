@@ -10,10 +10,10 @@ NodeJS tool to feed live [StreamText](https://streamtext.net/) caption data into
 
 ## usage
 - during your broadcast, open your obs-websocket-streamtext-captions folder in terminal / command line / bash
-- in terminal / command line / bash, run `node index [address:port] [password] [streamtext_event]`
-    - if you run NodeJS on the same computer as OBS, then you can use "localhost" as your address
-    - example: `node index localhost:4444 myPassword IHaveADream`
-- OR, edit the provided .bat file in a text editor, and then double-click on it (Windows)
+    - in terminal / command line / bash, run `node index [address:port] [password] [streamtext_event]`
+        - if you run NodeJS on the same computer as OBS, then you can use "localhost" as your address
+        - example: `node index localhost:4444 myPassword IHaveADream`
+- (Windows) OR, edit the provided .bat file in a text editor, and then double-click on it
 
 ## how it works / workflow / pipeline
 1. hire a human stenographer / live captioner / CART provider to type out captions, really really fast, into StreamText
