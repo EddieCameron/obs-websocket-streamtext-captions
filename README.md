@@ -27,6 +27,10 @@ If you can't afford / don't want to hire a human live captioner, there are alrea
 
 This tool is specifically for Twitch broadcasts to provide closed captions via human live captioners through StreamText (a common captioning service).
 
+## contributors / updates
+- aside from tweaks and bug fixes, this is mostly done
+- if you know C or C++, then you should make an OBS Plugin that does the same thing this does, without the need to install NodeJS
+
 ## open captions vs closed captions
 - "open captions" are always on, and burned directly into the video feed ... they cannot be turned off
 - "closed captions" are optional and usually more accessible (user can customize caption appearance, better compatibility with screen reader software, etc.)
