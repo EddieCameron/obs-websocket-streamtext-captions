@@ -3,13 +3,14 @@ NodeJS tool to feed live [StreamText](https://streamtext.net/) caption data into
 
 ## install
 1. download and install [NodeJS](https://nodejs.org/en/download/) on your OBS computer
-2. download or clone this repo, open it in command line / terminal / bash, and run `npm install`
+2. download or clone this repo, open the folder in command line / terminal / bash, and run `npm install`
 3. in OBS, go to **Tools > Options > Captions (Experimental)** and enable captions on a muted audio source via speech-to-text (don't worry, those bad captions will get overridden by this tool)
 4. download and install [obs-websocket](https://github.com/Palakis/obs-websocket) plugin, and activate it via **Tools > Options > WebSockets Server Settings**
     - this is also when you set your port and password
 
 ## usage
-- during your broadcast, run `node index [address:port] [password] [streamtext_event]` in your terminal
+- during your broadcast, open your obs-websocket-streamtext-captions folder in terminal / command line / bash
+- in terminal / command line / bash, run `node index [address:port] [password] [streamtext_event]`
     - if you run NodeJS on the same computer as OBS, then you can use "localhost" as your address
     - example: `node index localhost:4444 myPassword IHaveADream`
 - OR, edit the provided .bat file in a text editor, and then double-click on it (Windows)
