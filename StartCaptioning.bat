@@ -1,2 +1,2 @@
-node index localhost:4446 password2019 IHaveADream
+node index -a localhost:4446 -p password2019 -e IHaveADream
 pause

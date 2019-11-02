@@ -13,11 +13,37 @@
 
 const request = require('request');
 const OBSWebSocket = require('obs-websocket-js');
+var argv = require('yargs')
+    .usage('Usage: $0 [-a <obs_address> -p <obs_password>] -e <StreamText event name>')
+    .options({
+        'eventname': {
+            alias: 'e',
+            describe: "Name of StreamText event eg: 'IHaveADream'",
+            demandOption: true,
+            nargs: 1
+        },
+        'obsaddress': {
+            alias: 'a',
+            describe: "Address of OBS server to connect to",
+            implies: 'obspassword',
+            nargs: 1
+        },
+        'obspassword': {
+            alias: 'p',
+            describe: "Password to connect to OBS server",
+            implies: 'obsaddress',
+            nargs: 1
+        }
+    })
+    .help( false )
+    .argv;
 
 var accumText = "";
 var lastCaptionSendTime
 const MIN_CHAR_PER_CAPTION = 80
 const MAX_SECONDS_PER_CAPTION = 6
+
+var isObsConnected = false
 
 function makeRequest(eventName, last) {
     var url = `https://www.streamtext.net/text-data.ashx?event=${eventName}&last=${last}`;
@@ -37,55 +63,83 @@ function makeRequest(eventName, last) {
     request(options, (error, res, body) => {
         if (error != null) {
             console.error(error);
+            console.log("Error getting text. Trying again after timeout...");
+            setTimeout(() => {
+                makeRequest(eventName, last);
+            }, 1000);
         }
         else {
             var bodyJson = JSON.parse(body);
-            var next = bodyJson.lastPosition;
-            if (next == 0) {
+            if (bodyJson.hasOwnProperty("i") && bodyJson.i.length > 0) {
+                // was successful, send text to OBS and get next
+                bodyJson.i.forEach(element => {
+                    var text = element.d;
+                    text = decodeURIComponent(text);
+                    
+                    // console.log( `${last}: ${text}` )
+                    appendCaptionFragment(text);
+                });
+
+                var newLast = res.headers['l_p']
+                setTimeout(() => {
+                    makeRequest(eventName, newLast);                    
+                }, 500);
+                
+            }
+            else {
                 // no data wait and try again
                 console.log("No new text received. Trying again after timeout...");
                 setTimeout(() => {
                     makeRequest(eventName, last);
                 }, 1000);
             }
-            else {
-                // was successful, send text to OBS and get next
-                var text = bodyJson.i[0].d;
-                text = decodeURIComponent(text);
-                // console.log( `${last}: ${text}` )
-                appendCaptionFragment(text);
-                setTimeout(() => {
-                    makeRequest(eventName, next);                    
-                }, 500);
-            }
         }
     });
 }
 
 function appendCaptionFragment(captionText) {
+    console.log("adding text " + captionText);
     for (let i = 0; i < captionText.length; i++) {
         const c = captionText[i];
-        accumText += c;
-        if (c == ' ') {
-            // end of a word, try sending
-            if (accumText.length >= MIN_CHAR_PER_CAPTION) {
-                sendCaption(accumText);
-                accumText = "";
-            }
+        if (c == '\b') {
+            // backspace
+            if (accumText.length > 0)
+                accumText = accumText.slice(0, accumText.length - 1);
         }
-            
+        else {
+            accumText += c;
+            if (c == ' ') {
+                // end of a word, try sending
+                if (accumText.length >= MIN_CHAR_PER_CAPTION) {
+                    sendAccummulatedCaption();
+                }
+            }
+        }   
     }
 }
 
-function sendCaption(captionText) {
+function sendAccummulatedCaption() {
+    if (!isObsConnected)
+        return;
+    
     lastCaptionSendTime = Date.now();
-    console.log(">>> " + captionText);
-    obs.send('SendCaptions', { text: captionText })
+
+    sendTextToObs(accumText);
+    accumText = "";
+}
+
+function sendTextToObs(sendingText) {
+    console.log(">>> " + sendingText);
+    obs.send('SendCaptions', { text: sendingText })
         .then(data => {
             // console.log("Captions sent: " + JSON.stringify(data));
         })
         .catch(error => {
             console.error(error);
+            // try again
+            setTimeout(() => {
+                sendTextToObs(sendingText);
+            }, 2000);
         });
 }
 
@@ -94,28 +148,26 @@ function checkCaptionTimeout() {
     console.log("..." );
     if (Date.now() - lastCaptionSendTime > MAX_SECONDS_PER_CAPTION * 1000) {
         console.log("Too long between caption updates, sending current buffer!...")
-        sendCaption(accumText)
-        accumText = "";
+        sendAccummulatedCaption()
     }
 }
 
-var adr = process.argv[2];
-var pwd = process.argv[3];
-var streamTextEventName = process.argv[4];
-
 // set up obs
-const obs = new OBSWebSocket();
-console.log("Connecting to OBS server... ");
-obs.connect({ address: adr, password: pwd })
-    .then(() => {
-        console.log("Connected to OBS WebSockets server at " + adr);
-        console.log("Connecting to StreamText event " + streamTextEventName);
-        
-        makeRequest(streamTextEventName, 0);
+if (argv.obsaddress != undefined) {
+    const obs = new OBSWebSocket();
+    console.log("Connecting to OBS server... ");
+    obs.connect({ address: argv.obsaddress, password: argv.obspassword })
+        .then(() => {
+            console.log("Connected to OBS WebSockets server at " + adr);
+            isObsConnected = true;
 
-        lastCaptionSendTime = Date.now();
-        setInterval( checkCaptionTimeout, 1000);
-    })
-    .catch(err => {
-        console.error(err);
-    });
+            lastCaptionSendTime = Date.now();
+            setInterval(checkCaptionTimeout, 1000);
+        })
+        .catch(err => {
+            console.error(err);
+        });
+}
+
+console.log("Connecting to StreamText event " + argv.eventname);
+makeRequest(argv.eventname, 0);
