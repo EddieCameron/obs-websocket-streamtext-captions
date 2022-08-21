@@ -7,7 +7,7 @@
 // 3. download and install obs-websockets plugin for OBS, and activate it (Tools > Options > WebSockets Server Settings)
 
 // usage:
-// run "yarn transcribe -a [address:port] -p [password] -e [streamtext_event]" (e.g. "yarn transcribe -a ws:localhost:4444 -p myPassword -e IHaveADream")
+// run "yarn transcribe -a [address:port] -p [password] -e [streamtext_event]" (e.g. "yarn transcribe -a ws:localhost:4455 -p myPassword -e IHaveADream")
 
 import { default as axios } from "axios";
 import OBSWebSocket from "obs-websocket-js";
@@ -17,7 +17,7 @@ import yargs from "yargs";
 
 var argv = yargs(process.argv.slice(2))
   .usage(
-    "Usage: $0 [-a <obs_address> -p <obs_password>] -e <StreamText event name>"
+    "Usage: $0 [-a ws:<obs_address> -p <obs_password>] -e <StreamText event name>"
   )
   .options({
     eventname: {
@@ -103,7 +103,7 @@ function makeRequest(eventName: string, last: number) {
 }
 
 function appendCaptionFragment(captionText: string) {
-  console.log("adding text " + captionText);
+  // console.log("adding text " + captionText);
   for (let i = 0; i < captionText.length; i++) {
     const c = captionText[i];
     if (c == "\b") {
