@@ -10,7 +10,7 @@
 // run "yarn transcribe -a [address:port] -p [password] -e [streamtext_event]" (e.g. "yarn transcribe -a ws:localhost:4455 -p myPassword -e IHaveADream")
 
 import { default as axios } from "axios";
-import OBSWebSocket from "obs-websocket-js";
+import OBSWebSocket, { OBSWebSocketError } from "obs-websocket-js";
 const obs = new OBSWebSocket();
 
 import yargs from "yargs";
@@ -138,8 +138,17 @@ function sendTextToObs(sendingText: string) {
     .then((data: any) => {
       // console.log("Captions sent: " + JSON.stringify(data));
     })
-    .catch((error: any) => {
-      console.error(error);
+    .catch((error: OBSWebSocketError) => {
+      switch (error.code) {
+        case -1:
+          console.log("OBS not listening on port.");
+          break;
+        case 501:
+          console.log("No stream in progress.");
+          break;
+        default:
+          console.error(error);
+      }
       // try again
       setTimeout(() => {
         sendTextToObs(sendingText);
@@ -169,8 +178,13 @@ if (argv.obsaddress != undefined) {
       lastCaptionSendTime = Date.now();
       setInterval(checkCaptionTimeout, 1000);
     })
-    .catch((err) => {
-      console.error(err);
+    .catch((err: OBSWebSocketError) => {
+      if (err.code == -1) {
+        console.log("OBS not listening at " + addr);
+      } else {
+        console.error(err);
+      }
+      process.exit(1);
     });
 }
 
