@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    // Write compiled files to this directory
+    "outDir": "./out",
+    "incremental": true,
+
+    "target": "es2020",
+    // Export Node-style modules since this is running on Node
+    "module": "nodenext",
+    // We're running on Node, so use this strategy.
+    "moduleResolution": "nodenext",
+
+    // Various strictness guarantees when compiling
+    "strict": true,
+    "noImplicitReturns": true,
+    "alwaysStrict": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // According to the TS team, this should always be set to true; the default
+    // is false for backwards compatibility.
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    "lib": [
+      "es2020",
+      "dom"
+    ] /* Specify library files to be included in the compilation:  */,
+    "allowJs": true /* Allow javascript files to be compiled. */,
+    "sourceMap": true /* Generates corresponding '.map' file. */
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules", "static", "out/**/*"]
+}
